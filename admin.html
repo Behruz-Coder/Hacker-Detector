@@ -2,45 +2,63 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <title>TERMINAL v1.1 | ACCESS GRANTED</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL v1.3 | ACCESS GRANTED</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        :root { --neon: #00ff41; --bg: #0a0a0a; --dark-green: #004411; }
         body { 
-            background-color: #0a0a0a; 
-            color: #00ff41; 
+            background-color: var(--bg); 
+            color: var(--neon); 
             font-family: 'Courier New', Courier, monospace; 
             margin: 0; padding: 20px;
             text-transform: uppercase;
+            overflow-x: hidden;
         }
+        
+        /* Login Bo'limi */
         #auth {
-            height: 80vh; display: flex; flex-direction: column;
+            height: 90vh; display: flex; flex-direction: column;
             justify-content: center; align-items: center;
         }
-        .hacker-border {
-            border: 2px solid #00ff41; padding: 30px;
-            box-shadow: 0 0 15px #00ff41; border-radius: 5px;
+        .hacker-box {
+            border: 2px solid var(--neon); padding: 40px;
+            box-shadow: 0 0 20px var(--neon); border-radius: 5px;
+            text-align: center; background: rgba(0, 0, 0, 0.8);
         }
         input {
-            background: transparent; border: 1px solid #00ff41;
-            color: #00ff41; padding: 10px; font-size: 1.2rem;
-            outline: none; margin-bottom: 20px; width: 250px;
-            text-align: center;
+            background: transparent; border: 1px solid var(--neon);
+            color: var(--neon); padding: 12px; font-size: 1.2rem;
+            outline: none; margin-bottom: 20px; width: 280px;
+            text-align: center; letter-spacing: 5px;
         }
         button {
-            background: #00ff41; color: #0a0a0a; border: none;
-            padding: 10px 25px; cursor: pointer; font-weight: bold;
-            letter-spacing: 2px;
+            background: var(--neon); color: var(--bg); border: none;
+            padding: 12px 30px; cursor: pointer; font-weight: bold;
+            letter-spacing: 2px; transition: 0.3s;
         }
-        button:hover { background: #00cc33; box-shadow: 0 0 10px #00ff41; }
+        button:hover { background: #00cc33; box-shadow: 0 0 15px var(--neon); }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
-        th { background: #00ff41; color: #0a0a0a; padding: 12px; }
-        td { border-bottom: 1px solid #004411; padding: 12px; font-size: 0.9rem; }
+        /* Asosiy Panel */
+        #main { animation: fadeIn 1s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .status-bar { 
+            border-bottom: 1px solid var(--neon); 
+            padding: 15px; margin-bottom: 25px; 
+            background: rgba(0, 255, 65, 0.05);
+            font-size: 0.9rem; line-height: 1.5;
+        }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: var(--neon); color: var(--bg); padding: 15px; text-align: left; }
+        td { border-bottom: 1px solid var(--dark-green); padding: 12px; font-size: 0.85rem; }
         tr:hover { background: rgba(0, 255, 65, 0.1); }
         
-        .status-bar { border-bottom: 1px solid #00ff41; padding-bottom: 10px; margin-bottom: 20px; }
+        .loading { text-align: center; padding: 20px; font-style: italic; }
         .hidden { display: none; }
-        .glitch { animation: glitch 1s linear infinite; }
+        .glitch { animation: glitch 1.5s linear infinite; font-size: 1.8rem; margin-bottom: 20px; }
+        
         @keyframes glitch {
             2%, 64% { transform: translate(2px,0) skew(0deg); }
             4%, 60% { transform: translate(-2px,0) skew(0deg); }
@@ -51,28 +69,31 @@
 <body>
 
     <div id="auth">
-        <div class="hacker-border">
-            <h2 class="glitch">SYSTEM LOGIN</h2>
-            <input type="password" id="pass" placeholder="ENTER ACCESS CODE">
+        <div class="hacker-box">
+            <div class="glitch">SECURE TERMINAL</div>
+            <p style="font-size: 0.8rem; margin-bottom: 20px;">AUTHORIZATION REQUIRED</p>
+            <input type="password" id="pass" placeholder="********" autofocus>
             <br>
-            <button onclick="checkPass()">EXECUTE</button>
+            <button onclick="checkPass()">DECRYPT & ENTER</button>
         </div>
     </div>
 
     <div id="main" class="hidden">
         <div class="status-bar">
-            > ROOT ACCESS: ENABLED <br>
-            > DATABASE: CONNECTED <br>
-            > VICTIMS IDENTIFIED: <span id="count">0</span>
+            > SYSTEM STATUS: <span style="color: white;">OPERATIONAL</span><br>
+            > ENCRYPTION: <span style="color: white;">AES-256 ACTIVE</span><br>
+            > TOTAL VICTIMS DETECTED: <span id="count" style="color: white;">0</span>
         </div>
         
+        <div id="loader" class="loading hidden">CONNECTING TO DATABASE... PLEASE WAIT...</div>
+
         <table>
             <thead>
                 <tr>
-                    <th>IP_ADDR</th>
-                    <th>GEO_LOCATION</th>
-                    <th>USER_AGENT</th>
-                    <th>TIMESTAMP</th>
+                    <th>[ IP_ADDRESS ]</th>
+                    <th>[ GEO_DATA ]</th>
+                    <th>[ CLIENT_SPECS ]</th>
+                    <th>[ LOG_TIME ]</th>
                 </tr>
             </thead>
             <tbody id="data-list">
@@ -81,42 +102,67 @@
     </div>
 
     <script>
-        // SUPABASE MA'LUMOTLARINI BU YERGA QO'YING
-        const SB_URL = 'YOUR_SUPABASE_URL';
-        const SB_KEY = 'YOUR_SUPABASE_ANON_KEY';
-        const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+        // --- BU YERGA O'ZINGIZNING SUPABASE MA'LUMOTLARINGIZNI QO'YING ---
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // Parolni tekshirish funksiyasi
         function checkPass() {
             const p = document.getElementById('pass').value;
-            // PAROL SIZ AYTGANDAY: DARVIN109
             if (p === "DARVIN109") {
                 document.getElementById('auth').classList.add('hidden');
                 document.getElementById('main').classList.remove('hidden');
                 loadData();
             } else {
-                alert("ACCESS DENIED! UNAUTHORIZED ATTEMPT.");
+                alert("ACCESS DENIED! WRONG PASSCODE.");
+                document.getElementById('pass').value = "";
             }
         }
 
+        // Ma'lumotlarni yuklash funksiyasi
         async function loadData() {
-            const { data, error } = await supabaseClient
-                .from('victims')
-                .select('*')
-                .order('created_at', { ascending: false });
+            const loader = document.getElementById('loader');
+            const list = document.getElementById('data-list');
+            
+            loader.classList.remove('hidden');
+            list.innerHTML = "";
 
-            if (data) {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('victims')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
                 document.getElementById('count').innerText = data.length;
-                const list = document.getElementById('data-list');
-                list.innerHTML = data.map(v => `
-                    <tr>
-                        <td>[ ${v.ip_address} ]</td>
-                        <td>${v.city}, ${v.country}</td>
-                        <td style="color: #008822; font-size: 11px;">${v.user_agent}</td>
-                        <td>${new Date(v.created_at).toLocaleString()}</td>
-                    </tr>
-                `).join('');
+
+                if (data.length === 0) {
+                    list.innerHTML = "<tr><td colspan='4' style='text-align:center; padding: 50px;'>NO TARGETS ACQUIRED YET...</td></tr>";
+                } else {
+                    list.innerHTML = data.map(v => `
+                        <tr>
+                            <td style="color:white; font-weight:bold;">${v.ip_address}</td>
+                            <td>${v.city || 'Unknown'}, ${v.country || 'Unknown'}</td>
+                            <td style="color: #008822; font-size: 10px; font-family: sans-serif;">${v.user_agent}</td>
+                            <td>${new Date(v.created_at).toLocaleString('uz-UZ')}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error("Xatolik:", err.message);
+                list.innerHTML = `<tr><td colspan='4' style='color:red;'>ERROR: ${err.message}</td></tr>`;
+            } finally {
+                loader.classList.add('hidden');
             }
         }
+
+        // Enter tugmasini bosganda ham kirish
+        document.getElementById('pass').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkPass();
+        });
     </script>
 </body>
 </html>
