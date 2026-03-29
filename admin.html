@@ -2,45 +2,74 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TERMINAL v1.3 | ACCESS GRANTED</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #0a0a0a; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; padding: 20px; text-transform: uppercase; }
-        #auth { height: 90vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .hacker-box { border: 2px solid #00ff41; padding: 40px; box-shadow: 0 0 20px #00ff41; text-align: center; }
-        input { background: transparent; border: 1px solid #00ff41; color: #00ff41; padding: 12px; margin-bottom: 20px; width: 280px; text-align: center; outline: none; letter-spacing: 3px; }
-        button { background: #00ff41; color: #0a0a0a; border: none; padding: 12px 30px; cursor: pointer; font-weight: bold; }
-        .status-bar { border-bottom: 1px solid #00ff41; padding: 15px; margin-bottom: 25px; font-size: 0.9rem; }
+        :root { --neon: #00ff41; --bg: #0a0a0a; }
+        body { 
+            background-color: var(--bg); 
+            color: var(--neon); 
+            font-family: 'Courier New', monospace; 
+            margin: 0; padding: 20px;
+            text-transform: uppercase;
+        }
+        #auth {
+            height: 90vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .hacker-box {
+            border: 2px solid var(--neon); padding: 40px;
+            box-shadow: 0 0 20px var(--neon); text-align: center;
+        }
+        input {
+            background: transparent; border: 1px solid var(--neon);
+            color: var(--neon); padding: 12px; margin-bottom: 20px;
+            width: 280px; text-align: center; outline: none; letter-spacing: 5px;
+        }
+        button {
+            background: var(--neon); color: var(--bg); border: none;
+            padding: 12px 30px; cursor: pointer; font-weight: bold;
+            letter-spacing: 2px;
+        }
+        .status-bar { border-bottom: 1px solid var(--neon); padding: 15px; margin-bottom: 25px; font-size: 0.8rem; }
         table { width: 100%; border-collapse: collapse; }
-        th { background: #00ff41; color: #0a0a0a; padding: 12px; text-align: left; }
+        th { background: var(--neon); color: var(--bg); padding: 12px; text-align: left; }
         td { border-bottom: 1px solid #004411; padding: 10px; font-size: 0.8rem; }
         .hidden { display: none; }
+        .loading { text-align: center; padding: 20px; color: white; }
     </style>
 </head>
 <body>
+
     <div id="auth">
         <div class="hacker-box">
-            <h2 style="margin-bottom: 20px;">SECURE TERMINAL</h2>
-            <input type="password" id="pass" placeholder="ENTER ACCESS CODE" autofocus>
+            <h2 style="margin-bottom: 20px;">SYSTEM ACCESS</h2>
+            <input type="password" id="pass" placeholder="PASSWORD" autofocus>
             <br>
-            <button onclick="checkAccess()">DECRYPT & ENTER</button>
+            <button onclick="checkAccess()">DECRYPT</button>
         </div>
     </div>
 
     <div id="main" class="hidden">
         <div class="status-bar">
-            > SYSTEM: ONLINE | ACCESS: ROOT | VICTIMS DETECTED: <span id="count">0</span>
+            > STATUS: <span style="color:white">CONNECTED</span> | 
+            > TARGETS: <span id="count" style="color:white">0</span>
         </div>
+        
+        <div id="loader" class="loading hidden">SYNCHRONIZING DATABASE...</div>
+
         <table>
             <thead>
                 <tr>
                     <th>IP_ADDRESS</th>
                     <th>LOCATION</th>
-                    <th>DEVICE_INFO</th>
+                    <th>DEVICE</th>
                     <th>TIMESTAMP</th>
                 </tr>
             </thead>
-            <tbody id="data-list"></tbody>
+            <tbody id="data-list">
+                </tbody>
         </table>
     </div>
 
@@ -48,19 +77,40 @@
         const SB_URL = 'https://qkvrelghiruyfpdjremr.supabase.co';
         const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrdnJlbGdoaXJ1eWZwZGpyZW1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3NjE1MDQsImV4cCI6MjA5MDMzNzUwNH0.aDmEIWKEYpgcfQRDOCqczrs8o8uTsQnmmyQ02HmsWIw';
         
-        // Client initialization (Global)
-        const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+        let supabaseClient; // Global e'lon qilamiz
 
         function checkAccess() {
             const p = document.getElementById('pass').value;
+            
             if (p === "DARVIN109") {
-                document.getElementById('auth').classList.add('hidden');
-                document.getElementById('main').classList.remove('hidden');
-                loadVictims();
-            } else { alert("ACCESS DENIED"); }
+                // 1. Supabase yuklanganini tekshirish
+                if (typeof supabase === 'undefined') {
+                    alert("Kutubxona yuklanmoqda... 2 soniya kuting.");
+                    return;
+                }
+
+                // 2. Clientni aynan shu yerda (initialization) yaratamiz
+                try {
+                    supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+                    
+                    document.getElementById('auth').classList.add('hidden');
+                    document.getElementById('main').classList.remove('hidden');
+                    loadData();
+                } catch (e) {
+                    alert("Ulanishda xato: " + e.message);
+                }
+            } else {
+                alert("ACCESS DENIED");
+                document.getElementById('pass').value = "";
+            }
         }
 
-        async function loadVictims() {
+        async function loadData() {
+            const loader = document.getElementById('loader');
+            const list = document.getElementById('data-list');
+            
+            loader.classList.remove('hidden');
+            
             try {
                 const { data, error } = await supabaseClient
                     .from('victims')
@@ -70,19 +120,30 @@
                 if (error) throw error;
 
                 document.getElementById('count').innerText = data.length;
-                const list = document.getElementById('data-list');
-                list.innerHTML = data.map(v => `
-                    <tr>
-                        <td style="color:white; font-weight:bold;">${v.ip_address}</td>
-                        <td>${v.city || 'Noma\'lum'}, ${v.country || 'Noma\'lum'}</td>
-                        <td style="color:#008822; font-size:10px;">${v.user_agent}</td>
-                        <td>${new Date(v.created_at).toLocaleString('uz-UZ')}</td>
-                    </tr>
-                `).join('');
-            } catch (err) { alert("Error: " + err.message); }
+
+                if (data.length === 0) {
+                    list.innerHTML = "<tr><td colspan='4' style='text-align:center; padding: 20px;'>NO DATA FOUND</td></tr>";
+                } else {
+                    list.innerHTML = data.map(v => `
+                        <tr>
+                            <td style="color:white; font-weight:bold;">${v.ip_address}</td>
+                            <td>${v.city || '?'}, ${v.country || '?'}</td>
+                            <td style="color:#008822; font-size:10px;">${v.user_agent}</td>
+                            <td>${new Date(v.created_at).toLocaleString('uz-UZ')}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) {
+                alert("Database Error: " + err.message);
+            } finally {
+                loader.classList.add('hidden');
+            }
         }
 
-        document.getElementById('pass').addEventListener('keypress', (e) => { if(e.key === 'Enter') checkAccess(); });
+        // Enter tugmasini qo'llab-quvvatlash
+        document.getElementById('pass').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkAccess();
+        });
     </script>
 </body>
 </html>
