@@ -2,52 +2,100 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Panel v1.1</title>
+    <title>TERMINAL v1.1 | ACCESS GRANTED</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: monospace; background: #1a1a1a; color: #00ff00; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #222; }
-        th, td { border: 1px solid #444; padding: 10px; text-align: left; }
-        th { background: #333; }
+        body { 
+            background-color: #0a0a0a; 
+            color: #00ff41; 
+            font-family: 'Courier New', Courier, monospace; 
+            margin: 0; padding: 20px;
+            text-transform: uppercase;
+        }
+        #auth {
+            height: 80vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .hacker-border {
+            border: 2px solid #00ff41; padding: 30px;
+            box-shadow: 0 0 15px #00ff41; border-radius: 5px;
+        }
+        input {
+            background: transparent; border: 1px solid #00ff41;
+            color: #00ff41; padding: 10px; font-size: 1.2rem;
+            outline: none; margin-bottom: 20px; width: 250px;
+            text-align: center;
+        }
+        button {
+            background: #00ff41; color: #0a0a0a; border: none;
+            padding: 10px 25px; cursor: pointer; font-weight: bold;
+            letter-spacing: 2px;
+        }
+        button:hover { background: #00cc33; box-shadow: 0 0 10px #00ff41; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        th { background: #00ff41; color: #0a0a0a; padding: 12px; }
+        td { border-bottom: 1px solid #004411; padding: 12px; font-size: 0.9rem; }
+        tr:hover { background: rgba(0, 255, 65, 0.1); }
+        
+        .status-bar { border-bottom: 1px solid #00ff41; padding-bottom: 10px; margin-bottom: 20px; }
         .hidden { display: none; }
-        input { background: #333; color: #0ff; border: 1px solid #0ff; padding: 5px; }
+        .glitch { animation: glitch 1s linear infinite; }
+        @keyframes glitch {
+            2%, 64% { transform: translate(2px,0) skew(0deg); }
+            4%, 60% { transform: translate(-2px,0) skew(0deg); }
+            62% { transform: translate(0,0) skew(5deg); }
+        }
     </style>
 </head>
 <body>
+
     <div id="auth">
-        <h3>Tizimga kirish:</h3>
-        <input type="password" id="pass" placeholder="Parol...">
-        <button onclick="checkPass()">Kirish</button>
+        <div class="hacker-border">
+            <h2 class="glitch">SYSTEM LOGIN</h2>
+            <input type="password" id="pass" placeholder="ENTER ACCESS CODE">
+            <br>
+            <button onclick="checkPass()">EXECUTE</button>
+        </div>
     </div>
 
     <div id="main" class="hidden">
-        <h2>Tutilgan ma'lumotlar bazasi</h2>
+        <div class="status-bar">
+            > ROOT ACCESS: ENABLED <br>
+            > DATABASE: CONNECTED <br>
+            > VICTIMS IDENTIFIED: <span id="count">0</span>
+        </div>
+        
         <table>
             <thead>
                 <tr>
-                    <th>IP</th>
-                    <th>Shahar</th>
-                    <th>Davlat</th>
-                    <th>Qurilma</th>
-                    <th>Vaqt</th>
+                    <th>IP_ADDR</th>
+                    <th>GEO_LOCATION</th>
+                    <th>USER_AGENT</th>
+                    <th>TIMESTAMP</th>
                 </tr>
             </thead>
-            <tbody id="data-list"></tbody>
+            <tbody id="data-list">
+                </tbody>
         </table>
     </div>
 
     <script>
-        const SB_URL = 'https://qkvrelghiruyfpdjremr.supabase.co';
-        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrdnJlbGdoaXJ1eWZwZGpyZW1yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3NjE1MDQsImV4cCI6MjA5MDMzNzUwNH0.aDmEIWKEYpgcfQRDOCqczrs8o8uTsQnmmyQ02HmsWIw';
+        // SUPABASE MA'LUMOTLARINI BU YERGA QO'YING
+        const SB_URL = 'YOUR_SUPABASE_URL';
+        const SB_KEY = 'YOUR_SUPABASE_ANON_KEY';
         const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
 
         function checkPass() {
             const p = document.getElementById('pass').value;
-            if (p === "ADMIN123") { // SHU YERGA O'Z PAROLINGIZNI YOZING
+            // PAROL SIZ AYTGANDAY: DARVIN109
+            if (p === "DARVIN109") {
                 document.getElementById('auth').classList.add('hidden');
                 document.getElementById('main').classList.remove('hidden');
                 loadData();
-            } else { alert("Xato!"); }
+            } else {
+                alert("ACCESS DENIED! UNAUTHORIZED ATTEMPT.");
+            }
         }
 
         async function loadData() {
@@ -57,13 +105,13 @@
                 .order('created_at', { ascending: false });
 
             if (data) {
+                document.getElementById('count').innerText = data.length;
                 const list = document.getElementById('data-list');
                 list.innerHTML = data.map(v => `
                     <tr>
-                        <td>${v.ip_address}</td>
-                        <td>${v.city}</td>
-                        <td>${v.country}</td>
-                        <td style="font-size: 10px;">${v.user_agent}</td>
+                        <td>[ ${v.ip_address} ]</td>
+                        <td>${v.city}, ${v.country}</td>
+                        <td style="color: #008822; font-size: 11px;">${v.user_agent}</td>
                         <td>${new Date(v.created_at).toLocaleString()}</td>
                     </tr>
                 `).join('');
